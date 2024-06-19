@@ -124,16 +124,14 @@ class Utils:
             outputPath.header.stamp = timestamp.to_msg()
 
         if waypoints.shape[0] > 0:
-            outputPath.poses = [
-                PoseStamped(
-                    Header(frame_id=frameId), Pose(Point(x=waypoint[0], y=waypoint[1]), Quaternion())
-                )
-                for waypoint in waypoints
-            ]
+            for waypoint in waypoints:
+                pose = PoseStamped(
+                    Header(frame_id=frameId), Pose(Point(x=waypoint[0], y=waypoint[1]), Quaternion()))
+                outputPath.poses.append(pose)
         return outputPath
 
 
-    def parsePathMessage(path: Path) -> npt.NDArray[np.float64]:
+    def parsePathMessage(self, path: Path) -> npt.NDArray[np.float64]:
         """
         Parse a path message into a numpy array
 
@@ -153,7 +151,7 @@ class Utils:
         return np.array(waypoints)
 
 
-    def npToPcl(cloudArray: npt.NDArray[np.float64]) -> PointCloud:
+    def npToPcl(self, cloudArray: npt.NDArray[np.float64]) -> PointCloud:
         """
         Converts a numpy array of points to a pcl point cloud
 
@@ -181,7 +179,7 @@ class Utils:
 
 
     # pylint: disable=too-many-locals
-    def rosToPcl(rosPc2: PointCloud2, squeeze: bool = True) -> PointCloud:
+    def rosToPcl(self, rosPc2: PointCloud2, squeeze: bool = True) -> PointCloud:
         """
         Parses a given PointCloud2 ros message into a pcl point cloud
 
@@ -270,7 +268,7 @@ class Utils:
         else:
             cloudNp = np.array([x, y, z]).T
 
-        cloud = npToPcl(cloudNp)
+        cloud = self.npToPcl(cloudNp)
         return cloud
 
 

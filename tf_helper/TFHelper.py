@@ -19,7 +19,7 @@ from asurt_msgs.msg import LandmarkArray
 from visualization_msgs.msg import MarkerArray
 
 
-from utils import npToRos, rosToPcl
+from utils import Utils
 
 
 class TFHelper:
@@ -33,6 +33,7 @@ class TFHelper:
         self.listener = TransformListener(self.tfBuffer, self.nodeObject)
         time.sleep(0.2)  # To ensure a tf has been received
         self.warningPrinted: Dict[str, int] = {}
+        self.utils = Utils(nodeObject)
 
     def getTransform(
         self, fromId: str, toId: str
@@ -71,7 +72,7 @@ class TFHelper:
         except (LookupException, ConnectivityException, ExtrapolationException):
             if fromId + toId not in self.warningPrinted:
                 self.nodeObject.get_logger().warn(
-                    f"{self.nodeObject.get_name()}: Couldn't get tf from + {fromId } to + {toId}"
+                    f"{self.nodeObject.get_name()}: Couldn't get tf from {fromId } to {toId}"
                 )
                 self.warningPrinted[fromId + toId] = 1
             else:
@@ -290,9 +291,9 @@ class TFHelper:
             If the transformation is not possible, the message is returned as is (with old frame_id)
         """
         fromId = rosMsg.header.frame_id
-        npPc = rosToPcl(rosMsg).to_array()
+        npPc = self.utils.rosToPcl(rosMsg).to_array()
         npPc[:, :3] = self.transformArr3d(npPc[:, :3], fromId, toId)
-        return npToRos(npPc, toId)
+        return self.utils.npToRos(npPc, toId)
 
     def transformMsg(self, rosMsg: Any, toId: str) -> Any:
         """
